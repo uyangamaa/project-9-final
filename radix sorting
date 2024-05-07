@@ -1,0 +1,86 @@
+import random
+import tkinter as tk
+from tkinter import ttk
+
+def get_digit(number, d):
+    return number // 10**d % 10
+
+def counting_sort(arr, digit):
+    n = len(arr)
+    output = [0] * n
+    count = [0] * 10
+    
+    for num in arr:
+        index = get_digit(num, digit)
+        count[index] += 1
+    
+    for i in range(1, 10):
+        count[i] += count[i - 1]
+    
+    i = n - 1
+    while i >= 0:
+        index = get_digit(arr[i], digit)
+        output[count[index] - 1] = arr[i]
+        count[index] -= 1
+        i -= 1
+    
+    for i in range(n):
+        arr[i] = output[i]
+
+def radix_sort(arr):
+    max_digit = len(str(max(arr))) if arr else 0
+    for digit in range(max_digit):
+        counting_sort(arr, digit)
+
+def bucket_sort(arr):
+    buckets = [[] for _ in range(11)]  # 11 buckets for 0-1000 by hundreds
+    for num in arr:
+        bucket_index = num // 100
+        buckets[bucket_index].append(num)
+    
+    sorted_buckets = []
+    for bucket in buckets:
+        if bucket:
+            radix_sort(bucket)
+            sorted_buckets.append(bucket)
+        else:
+            sorted_buckets.append([])  # Add empty list for empty buckets
+    
+    sorted_arr = [num for bucket in sorted_buckets for num in bucket]
+    return sorted_arr
+
+def generate_random_numbers():
+    random_numbers = [random.randint(0, 1000) for _ in range(20)]
+    unsorted_var.set(' '.join(map(str, random_numbers)))
+
+def sort_numbers():
+    unsorted_numbers = list(map(int, unsorted_var.get().split()))
+    sorted_numbers = bucket_sort(unsorted_numbers)
+    sorted_var.set(' '.join(map(str, sorted_numbers)))
+
+root = tk.Tk()
+root.title("Radix Sort Visualization")
+
+# Generate random numbers button
+generate_button = ttk.Button(root, text="Generate Random Numbers", command=generate_random_numbers)
+generate_button.pack(pady=5)
+
+# Unsorted numbers label and text box
+unsorted_var = tk.StringVar()
+unsorted_label = ttk.Label(root, text="Unsorted Numbers:")
+unsorted_label.pack()
+unsorted_text = ttk.Entry(root, textvariable=unsorted_var, state="readonly", width=100)
+unsorted_text.pack()
+
+# Sort button
+sort_button = ttk.Button(root, text="Sort", command=sort_numbers)
+sort_button.pack(pady=5)
+
+# Sorted numbers label and text box
+sorted_var = tk.StringVar()
+sorted_label = ttk.Label(root, text="Sorted Numbers:")
+sorted_label.pack()
+sorted_text = ttk.Entry(root, textvariable=sorted_var, state="readonly", width=100)
+sorted_text.pack()
+
+root.mainloop()
